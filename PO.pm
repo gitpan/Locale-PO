@@ -10,7 +10,7 @@ require AutoLoader;
 
 @ISA = qw(Exporter AutoLoader);
 @EXPORT = qw();
-$VERSION = '0.13';
+$VERSION = '0.14';
 
 # Preloaded methods go here.
 
@@ -89,7 +89,7 @@ sub dump {
   my $self = shift;
   my $dump;
   $dump = $self->dump_multi_comment($self->comment,"# ") if ($self->comment);
-  $dump .= "#. " . $self->automatic . "\n" if (defined($self->automatic));
+  $dump .= $self->dump_multi_comment($self->automatic,"#. ") if ($self->automatic);
   $dump .= $self->dump_multi_comment($self->reference,"#: ") if ($self->reference);
   my $flags;
   $flags = "fuzzy " if $self->fuzzy;
@@ -210,7 +210,11 @@ sub load_file {
     } elsif (/^#\. (.*)/) {
       # Automatic comments
       $po = new Locale::PO unless defined($po);
-      $po->automatic($1);
+      if (defined($po->automatic)) {
+        $po->automatic($po->automatic . "\n$1");
+      } else {
+        $po->automatic($1);
+      }
     } elsif (/^#: (.*)/) {
       # reference
       $po = new Locale::PO unless defined($po);
