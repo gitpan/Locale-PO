@@ -16,6 +16,7 @@ INSTALLATION
     make install
 
 REVISION HISTORY
+    0.11    July 2000 - Minor fix to the test script
     0.10    July 2000 - Initial release.
 
 FUTURE PLANS

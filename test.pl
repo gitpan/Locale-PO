@@ -36,8 +36,9 @@ print "ok 5\n";
 Locale::PO->save_file_fromarray("test.pot.out",$pos);
 print "ok 6\n";
 
-$out = `diff -B test.pot test.pot.out`;
-if ($?) {
+$out = `diff test.pot test.pot.out | grep '^[<>].*[^ ]'`;
+if ($? == 0) {
+  # Matches found, that's bad.
   print "not ok 7\n";
 } else {
   print "ok 7\n";
