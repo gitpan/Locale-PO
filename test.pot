@@ -13,7 +13,6 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: ENCODING\n"
 
-
 #: src/access.c:192
 #: src/access.c:196
 msgid "No %s file found."
@@ -356,7 +355,9 @@ msgid "Listening (NT-style) on port %d\n"
 msgstr ""
 
 #: src/bsd.c:727
-msgid "\nMUSH shutdown completed.\n"
+msgid ""
+"\n"
+"MUSH shutdown completed.\n"
 msgstr ""
 
 #: src/bsd.c:758
@@ -672,7 +673,9 @@ msgid "You now appear on the WHO list."
 msgstr ""
 
 #: src/bsd.c:4673
-msgid "\n*** Inactivity timeout ***\n"
+msgid ""
+"\n"
+"*** Inactivity timeout ***\n"
 msgstr ""
 
 #: src/bsd.c:4675
@@ -680,7 +683,9 @@ msgid "[%d/%s/%s] Logout by %s(#%d) <Inactivity Timeout>"
 msgstr ""
 
 #: src/bsd.c:4683
-msgid "\n*** Inactivity limit reached. You are now HIDDEN. ***\n"
+msgid ""
+"\n"
+"*** Inactivity limit reached. You are now HIDDEN. ***\n"
 msgstr ""
 
 #: src/bsd.c:4788
@@ -2034,3 +2039,4 @@ msgstr ""
 #: src/extmail.c:1365
 msgid "Mail statistics for %s:"
 msgstr ""
+

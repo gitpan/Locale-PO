@@ -10,7 +10,7 @@ require AutoLoader;
 
 @ISA = qw(Exporter AutoLoader);
 @EXPORT = qw();
-$VERSION = '0.11';
+$VERSION = '0.12';
 
 # Preloaded methods go here.
 
@@ -67,15 +67,17 @@ sub normalize_str {
   my $string = shift;
   my $dequoted = $self->dequote($string);
   # This isn't quite perfect, but it's fast and easy
-  if ($dequoted =~ /[^n](\\n)+[^\\]/) {
+  if ($dequoted =~ /(^|[^\\])(\\\\)*\\n./) {
     # Multiline
     my $output;
     my @lines;
     $output = '""' . "\n";
-    @lines = split(/\\n/, $dequoted);
+    @lines = split(/\\n/, $dequoted, -1);
+    my $lastline = pop @lines; # special treatment for this one
     foreach (@lines) {
       $output .= $self->quote("$_\\n") . "\n";
     }
+    $output .= $self->quote($lastline) . "\n" if $lastline ne "";
     return $output;
   } else {
     # Single line

@@ -5,3 +5,4 @@ Makefile.PL
 PO.pm
 test.pl
 test.pot
+META.yml                                 Module meta-data (added by MakeMaker)
