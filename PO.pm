@@ -10,7 +10,7 @@ require AutoLoader;
 
 @ISA = qw(Exporter AutoLoader);
 @EXPORT = qw();
-$VERSION = '0.12';
+$VERSION = '0.13';
 
 # Preloaded methods go here.
 
@@ -199,7 +199,7 @@ sub load_file {
 
 	undef $po;
       }
-    } elsif (/^# (.*)/ or /^#$/) {
+    } elsif (/^# (.*)/ or /^#()$/) {
       # Translator comments
       $po = new Locale::PO unless defined($po);
       if (defined($po->comment)) { 

@@ -1,5 +1,8 @@
 Revision history for Perl extension Locale::PO.
 
+0.13  Fri Nov 21 14:25:01 CDT 2004
+	- Fix to empty comment handling by Frank Ralf 
+
 0.12  Fri Oct  1 13:00:01 CDT 2004
 	- Fixes to multiline string handling by Michael Soegtrop.
 
