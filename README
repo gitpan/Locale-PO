@@ -16,6 +16,7 @@ INSTALLATION
     make install
 
 REVISION HISTORY
+    0.15    Aug  2005 - Fix to flag output
     0.14    Dec  2004 - Allow #. comments to be multiline
     0.13    Oct  2004 - Fixes to empty comment handling
     0.12    Oct  2004 - Fixes to multiline string handling

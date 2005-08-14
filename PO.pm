@@ -10,7 +10,7 @@ require AutoLoader;
 
 @ISA = qw(Exporter AutoLoader);
 @EXPORT = qw();
-$VERSION = '0.14';
+$VERSION = '0.15';
 
 # Preloaded methods go here.
 
@@ -91,12 +91,13 @@ sub dump {
   $dump = $self->dump_multi_comment($self->comment,"# ") if ($self->comment);
   $dump .= $self->dump_multi_comment($self->automatic,"#. ") if ($self->automatic);
   $dump .= $self->dump_multi_comment($self->reference,"#: ") if ($self->reference);
-  my $flags;
-  $flags = "fuzzy " if $self->fuzzy;
-  $flags = "c-format " if (defined($self->c_format) and $self->c_format);
-  $flags = "no-c-format " if (defined($self->c_format) and !$self->c_format);
-  chop($flags) if defined($flags);
-  $dump .= "#, $flags\n" if defined($flags);
+  my $flags = '';
+  $flags .= ", fuzzy" if $self->fuzzy;
+  $flags .= ", c-format" if (defined($self->c_format) and
+$self->c_format);
+  $flags .= ", no-c-format" if (defined($self->c_format) and
+!$self->c_format);
+  $dump .= "#$flags\n" if length $flags;
   $dump .= "msgid " . $self->normalize_str($self->msgid);
   $dump .= "msgstr " . $self->normalize_str($self->msgstr);
   $dump .= "\n";
@@ -307,6 +308,18 @@ a list/hash of the form:
 
 Where options are msgid, msgstr, comment, automatic, reference,
 fuzzy, and c-format. See accessor methods below.
+
+To generate a po file header, add an entry with an empty
+msgid, like this:
+
+   $po = new Locale::PO(-msgid=>'', -msgstr=>
+	"Project-Id-Version: PACKAGE VERSION\\n" .
+	"PO-Revision-Date: YEAR-MO-DA HO:MI +ZONE\\n" .
+	"Last-Translator: FULL NAME <EMAIL@ADDRESS>\\n" .
+	"Language-Team: LANGUAGE <LL@li.org>\\n" .
+	"MIME-Version: 1.0\\n" .
+	"Content-Type: text/plain; charset=CHARSET\\n" .
+	"Content-Transfer-Encoding: ENCODING\\n");
 
 =item msgid
 
