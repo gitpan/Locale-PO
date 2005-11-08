@@ -1,5 +1,9 @@
 Revision history for Perl extension Locale::PO.
 
+0.16  Mon Oct 17 11:00:00 GMT 2005
+	- Added support for msgid_plural and msgstr_n. Also tidied up
+	  tests. evdb@ecclestoad.co.uk
+
 0.15  Sun Aug 13 15:34:00 CDT 2005
 	- Fix to output of flags by albert.fazli@gmail.com.
 

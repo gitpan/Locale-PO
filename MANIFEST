@@ -1,8 +1,11 @@
-README
 Changes
 MANIFEST
+META.yml                                 Module meta-data (added by MakeMaker)
 Makefile.PL
 PO.pm
-test.pl
-test.pot
-META.yml                                 Module meta-data (added by MakeMaker)
+README
+t/plurals.pot
+t/plurals.t
+t/singular.t
+t/test.pot
+t/test1.pot
