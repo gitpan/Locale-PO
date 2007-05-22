@@ -1,6 +1,6 @@
 Locale::PO - Object-oriented interface to gettext po-file entries
 
-    Copyright (c) 2000-2004 Alan Schwartz <alansz@pennmush.org>.
+    Copyright (c) 2000-2005 Alan Schwartz <alansz@pennmush.org>.
     All rights reserved.  This program is free software; you can
     redistribute it and/or modify it under the same terms as Perl itself.
 
@@ -9,6 +9,9 @@ DESCRIPTION
     entries in a gettext po-file (untranslated and translated strings,
     with associated comments). It can load and save complete po-files.
 
+PREREQUISITES
+    Test::More, File::Slurp
+
 INSTALLATION
     perl Makefile.PL
     make
@@ -16,6 +19,8 @@ INSTALLATION
     make install
 
 REVISION HISTORY
+    0.17    May  2007 - Fix to whitespace handling in load_file
+    0.16    Nov  2005 - msgid_plural, msgstr_n, test cleanup
     0.15    Aug  2005 - Fix to flag output
     0.14    Dec  2004 - Allow #. comments to be multiline
     0.13    Oct  2004 - Fixes to empty comment handling

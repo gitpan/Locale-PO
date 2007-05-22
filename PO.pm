@@ -13,7 +13,7 @@ use Carp;
 
 #@ISA     = qw(Exporter AutoLoader);
 #@EXPORT  = qw();
-our $VERSION = '0.16';
+our $VERSION = '0.17';
 
 # Preloaded methods go here.
 
@@ -291,7 +291,7 @@ sub load_file {
                 %buffer = ();
             }
         }
-        elsif ( /^# (.*)/ or /^#()$/ ) {
+        elsif ( /^#\s+(.*)/ or /^#()$/ ) {
 
             # Translator comments
             $po = new Locale::PO unless defined($po);
@@ -302,7 +302,7 @@ sub load_file {
                 $po->comment($1);
             }
         }
-        elsif (/^#\. (.*)/) {
+        elsif (/^#\.\s+(.*)/) {
 
             # Automatic comments
             $po = new Locale::PO unless defined($po);
@@ -313,7 +313,7 @@ sub load_file {
                 $po->automatic($1);
             }
         }
-        elsif (/^#: (.*)/) {
+        elsif (/^#:\s+(.*)/) {
 
             # reference
             $po = new Locale::PO unless defined($po);
@@ -324,7 +324,7 @@ sub load_file {
                 $po->reference($1);
             }
         }
-        elsif (/^#, (.*)/) {
+        elsif (/^#,\s+(.*)/) {
 
             # flags
             my $flags = $1;
@@ -334,23 +334,23 @@ sub load_file {
             $po->c_format(0)   if $flags =~ /no-c-format/i;
             $po->php_format(1) if $flags =~ /php-format/i;
         }
-        elsif (/^msgid (.*)/) {
+        elsif (/^msgid\s+(.*)/) {
             $po = new Locale::PO unless defined($po);
             $buffer{msgid} = $self->dequote($1);
             $last_buffer = \$buffer{msgid};
         }
-        elsif (/^msgid_plural (.*)/) {
+        elsif (/^msgid_plural\s+(.*)/) {
             $po = new Locale::PO unless defined($po);
             $buffer{msgid_plural} = $self->dequote($1);
             $last_buffer .= \$buffer{msgid_plural};
         }
-        elsif (/^msgstr (.*)/) {
+        elsif (/^msgstr\s+(.*)/) {
 
             # translated string
             $buffer{msgstr} = $self->dequote($1);
             $last_buffer = \$buffer{msgstr};
         }
-        elsif (/^msgstr\[(\d+)\] (.*)/) {
+        elsif (/^msgstr\[(\d+)\]\s+(.*)/) {
 
             # translated string
             $buffer{msgstr_n}{$1} = $self->dequote($2);

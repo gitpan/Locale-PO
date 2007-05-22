@@ -1,5 +1,9 @@
 Revision history for Perl extension Locale::PO.
 
+0.17  Tue May 22 12:07:00 CDT 2007
+    - Improved regexes in load_file to handle whitespace better.
+      Suggested by Byron Hammond.
+
 0.16  Mon Oct 17 11:00:00 GMT 2005
 	- Added support for msgid_plural and msgstr_n. Also tidied up
 	  tests. evdb@ecclestoad.co.uk
