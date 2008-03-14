@@ -19,6 +19,7 @@ msgid "No %s file found."
 msgstr ""
 
 #: src/access.c:229
+#, locale-po-flag-test, another-flag, c-format
 msgid "Failed to add access node!"
 msgstr ""
 

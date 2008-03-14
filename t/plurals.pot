@@ -60,6 +60,13 @@ msgid_plural "%d more were needed"
 msgstr[0] "just %d more init"
 msgstr[1] "loads more man, %d init"
 
+#: pb/phplib/pledge.php:281
+#, php-format
+#~ msgid "needed %d more"
+#~ msgid_plural "we needed %d more"
+#~ msgstr[0] "just %d more"
+#~ msgstr[1] "loads more man, %d"
+
 #: pb/phplib/pledge.php:283
 #, php-format
 msgid "%d more needed"
@@ -68,4 +75,8 @@ msgstr ""
 #: pb/phplib/pledge.php:310
 msgid "More details"
 msgstr ""
+
+#: pb/phplib/pledge.php:310
+#~ msgid "More info"
+#~ msgstr ""
 

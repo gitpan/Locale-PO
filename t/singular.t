@@ -59,6 +59,8 @@ ok $pos, "loaded test.pot file";
 $out = $pos->[0]->dump;
 ok $out, "dumped po object";
 
+is($pos->[1]->loaded_line_number, 16, "got line number of 2nd po entry");
+
 ok Locale::PO->save_file_fromarray( "t/test.pot.out", $pos ), "save to file";
 ok -e "t/test.pot.out", "the file now exists";
 

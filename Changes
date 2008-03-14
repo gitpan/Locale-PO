@@ -1,5 +1,18 @@
 Revision history for Perl extension Locale::PO.
 
+0.18  Mar 14 2008
+    - New maintainer: Ken Prows
+    - BUG #33969: Fixed a problem with multi-line msgid_plural entries
+    - BUG #18679: Obsolete entries (#~) are now preserved
+    - API: The following methods are now private:
+      load_file, save_file, normalize_str, dump_multi_comment
+      Apologies to anyone using these (undocumented) methods.
+    - FEATURE: Added "loaded_line_number" accessor which returns the line number
+      that an entry started at in the loaded po file
+    - FEATURE: Now preserves any flag encountered in a #~ comment 
+    - Expanded POD 
+    - Thanks to Kalle Olavi Niemitalo for help in making many of these changes
+
 0.17  Tue May 22 12:07:00 CDT 2007
     - Improved regexes in load_file to handle whitespace better.
       Suggested by Byron Hammond.
