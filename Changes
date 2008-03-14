@@ -1,5 +1,7 @@
 Revision history for Perl extension Locale::PO.
 
+0.19  Mar 14 2008
+    - FEATURE: Added msgctxt support (thanks to Kevin Scannell for the patch)
 0.18  Mar 14 2008
     - New maintainer: Ken Prows
     - BUG #33969: Fixed a problem with multi-line msgid_plural entries

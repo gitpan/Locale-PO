@@ -28,6 +28,7 @@ msgid "Unable to open %s."
 msgstr ""
 
 #: src/access.c:476
+msgctxt "SITE_LOCK"
 msgid "---- @sitelock will add sites immediately below this line ----"
 msgstr ""
 

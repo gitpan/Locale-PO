@@ -1,7 +1,7 @@
 package Locale::PO;
 use strict;
 use warnings;
-our $VERSION = '0.18';
+our $VERSION = '0.19';
 
 use Carp;
 
@@ -18,6 +18,7 @@ sub new {
     $self->msgstr( $options{'-msgstr'} ) if defined( $options{'-msgstr'} );
     $self->msgstr_n( $options{'-msgstr_n'} )
       if defined( $options{'-msgstr_n'} );
+	$self->msgctxt( $options{'-msgctxt'} ) if defined( $options{'-msgctxt'} );
     $self->comment( $options{'-comment'} ) if defined( $options{'-comment'} );
     $self->fuzzy( $options{'-fuzzy'} )     if defined( $options{'-fuzzy'} );
     $self->automatic( $options{'-automatic'} )
@@ -30,6 +31,11 @@ sub new {
     $self->c_format(0) if defined( $options{'-no_c_format'} );
 	$self->loaded_line_number( $options{'-loaded_line_number'} ) if defined( $options{'-loaded_line_number'} );
     return $self;
+}
+
+sub msgctxt {
+	my $self = shift;
+	@_ ? $self->{'msgctxt'} = $self->quote(shift) : $self->{'msgctxt'};
 }
 
 sub msgid {
@@ -145,30 +151,25 @@ sub _tri_value_flag {
     }
 }
 
-sub add_flag
-{
+sub add_flag {
 	my ($self, $flag_name) = @_;
 	push @{$self->_flags}, $flag_name;
 	return;
 }
 
-sub remove_flag
-{
+sub remove_flag {
 	my ($self, $flag_name) = @_;
 	my @new_flags;
-	foreach my $flag (@{$self->_flags})
-	{
+	foreach my $flag (@{$self->_flags}) {
 		push @new_flags, $flag unless $flag eq $flag_name;
 	}
 	$self->_flags(\@new_flags);
 	return;
 }
 
-sub has_flag
-{
+sub has_flag {
 	my ($self, $flag_name) = @_;
-	foreach my $flag (@{$self->_flags})
-	{
+	foreach my $flag (@{$self->_flags}) {
 		return 1 if $flag eq $flag_name;
 	}
 	return;
@@ -224,6 +225,8 @@ sub dump {
 	}
     $dump .= "#$flags\n" if length $flags;
 
+	$dump .= "${obsolete}msgctxt " . $self->_normalize_str( $self->msgctxt )
+		if $self->msgctxt;
     $dump .= "${obsolete}msgid " . $self->_normalize_str( $self->msgid );
     $dump .= "${obsolete}msgid_plural " . $self->_normalize_str( $self->msgid_plural )
 		if $self->msgid_plural;
@@ -326,29 +329,23 @@ sub _load_file {
             # Empty line. End of an entry.
 
             if ( defined($po) ) {
-
+            
+            	$po->msgctxt( $buffer{msgctxt} ) if defined $buffer{msgctxt};
                 $po->msgid( $buffer{msgid} ) if defined $buffer{msgid};
                 $po->msgid_plural( $buffer{msgid_plural} ) if defined $buffer{msgid_plural};
-                $po->msgstr( $buffer{msgstr} )     if defined $buffer{msgstr};
+                $po->msgstr( $buffer{msgstr} ) if defined $buffer{msgstr};
                 $po->msgstr_n( $buffer{msgstr_n} ) if defined $buffer{msgstr_n};
-
-                if ($ashash) {
-                    my $key = $po->msgid;
-                    if ( defined( $entries{$key} ) ) {
-
-                        # Prefer translated ones.
-                        $entries{ $po->msgid } = $po
-                          if $entries{$key}->msgstr !~ /\w/;
-                    }
-                    else {
-
-                        # No previous entry
-                        $entries{ $po->msgid } = $po;
-                    }
-                }
-                else {
-                    push( @entries, $po );
-                }
+				
+				# ashash
+				if ($ashash) {
+					if ( $po->_hash_key_ok(\%entries) ) {
+						$entries{ $po->msgid } = $po;
+					}
+				}
+				# asarray
+				else {
+					push( @entries, $po );
+				}
 
                 undef $po;
                 undef $last_buffer;
@@ -398,6 +395,12 @@ sub _load_file {
 				$po->add_flag($flag);
 			}
         }
+        elsif (/^(#~\s+)?msgctxt\s+(.*)/) {
+			$po = Locale::PO->new( -loaded_line_number => $line_number ) unless defined($po);
+			$buffer{msgctxt} = $self->dequote($2);
+			$last_buffer = \$buffer{msgctxt};
+			$po->obsolete(1) if $1;
+        }
         elsif (/^(#~\s+)?msgid\s+(.*)/) {
             $po = Locale::PO->new( -loaded_line_number => $line_number ) unless defined($po);
             $buffer{msgid} = $self->dequote($2);
@@ -432,16 +435,16 @@ sub _load_file {
         }
     }
     if ( defined($po) ) {
-        $po->msgid( $buffer{msgid} ) if defined $buffer{msgid};
-        $po->msgid_plural( $buffer{msgid_plural} )
-          if defined $buffer{msgid_plural};
-        $po->msgstr( $buffer{msgstr} )     if defined $buffer{msgstr};
-        $po->msgstr_n( $buffer{msgstr_n} ) if defined $buffer{msgstr_n};
+
+        $po->msgctxt( $buffer{msgctxt} ) if defined $buffer{msgctxt};
+		$po->msgid( $buffer{msgid} ) if defined $buffer{msgid};
+		$po->msgid_plural( $buffer{msgid_plural} ) if defined $buffer{msgid_plural};
+		$po->msgstr( $buffer{msgstr} ) if defined $buffer{msgstr};
+		$po->msgstr_n( $buffer{msgstr_n} ) if defined $buffer{msgstr_n};
 		
 		# ashash
 		if ($ashash) {
-			# don't overwrite non-obsolete entries with obsolete ones
-			unless (($po->obsolete) && (defined($entries{ $po->msgid })) && (not $entries{ $po->msgid }->obsolete)) {
+			if ( $po->_hash_key_ok(\%entries) ) {
 				$entries{ $po->msgid } = $po;
 			}
 		}
@@ -452,6 +455,24 @@ sub _load_file {
     }
     close IN;
     return ( $ashash ? \%entries : \@entries );
+}
+
+sub _hash_key_ok
+{
+	my ($self, $entries) = @_;
+	
+	my $key = $self->msgid;
+	
+	if ($entries->{$key}) {
+	
+		# don't overwrite non-obsolete entries with obsolete ones
+		return if ( ($self->obsolete) && (not $entries->{$key}->obsolete) );
+		
+		# don't overwrite translated entries with untranslated ones
+		return if ( ($self->msgstr !~ /\w/) && ($entries->{$key}->msgstr =~ /\w/) );
+	}
+	
+	return 1;
 }
 
 # Autoload methods go after =cut, and are processed by the autosplit program.
@@ -508,7 +529,7 @@ a list/hash of the form:
 
 	-option=>value, -option=>value, etc.
 
-Where options are msgid, msgstr, comment, automatic, reference,
+Where options are msgid, msgstr, msgctxt, comment, automatic, reference,
 fuzzy, and c-format. See accessor methods below.
 
 To generate a po file header, add an entry with an empty
@@ -556,10 +577,14 @@ the strings. eg:
 
 This method expects the new strings in unquoted form but returns the current strings in quoted form.
 
+=item msgctxt
+
+Set or get the translation context string from the object.
+
 =item obsolete
 
 Returns 1 if the entry is obsolete.
-Obsolete entries have their msgid, msgid_plural, msgstr and msgstr_n lines commented out with "#~"
+Obsolete entries have their msgid, msgid_plural, msgstr, msgstr_n and msgctxt lines commented out with "#~"
 
 When using load_file_ashash, non-obsolete entries will always replace obsolete entries with the same msgid.
 
@@ -684,7 +709,7 @@ Original version by: Alan Schwartz, alansz@pennmush.org
 If you load_file_as* then save_file_from*, the output file may have slight
 cosmetic differences from the input file (an extra blank line here or there).
 
-msgid, msgid_plural, msgstr and msgstr_n expect a non-quoted string as input, but return quoted strings.
+msgid, msgid_plural, msgstr, msgstr_n and msgctxt expect a non-quoted string as input, but return quoted strings.
 I'm hesitant to change this in fear of breaking the modules/scripts of people already using Locale::PO.
 
 Locale::PO requires blank lines between entries, but Uniforum style PO

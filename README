@@ -18,6 +18,7 @@ INSTALLATION
     make install
 
 REVISION HISTORY
+    0.19    Mar  2008 - Added msgctxt support
     0.18    Mar  2008 - New maintainer, fixed some old bugs, updated POD
     0.17    May  2007 - Fix to whitespace handling in load_file
     0.16    Nov  2005 - msgid_plural, msgstr_n, test cleanup
