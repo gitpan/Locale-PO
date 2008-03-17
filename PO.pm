@@ -1,7 +1,7 @@
 package Locale::PO;
 use strict;
 use warnings;
-our $VERSION = '0.19';
+our $VERSION = '0.20';
 
 use Carp;
 
@@ -219,13 +219,13 @@ sub dump {
       if ( $self->reference );
 
     my $flags = '';
-	foreach my $flag (@{$self->_flags})
-	{
-		$flags .= ", $flag"
-	}
+    foreach my $flag (@{$self->_flags})
+    {
+        $flags .= ", $flag"
+    }
     $dump .= "#$flags\n" if length $flags;
 
-	$dump .= "${obsolete}msgctxt " . $self->_normalize_str( $self->msgctxt )
+    $dump .= "${obsolete}msgctxt " . $self->_normalize_str( $self->msgctxt )
 		if $self->msgctxt;
     $dump .= "${obsolete}msgid " . $self->_normalize_str( $self->msgid );
     $dump .= "${obsolete}msgid_plural " . $self->_normalize_str( $self->msgid_plural )
@@ -390,28 +390,28 @@ sub _load_file {
             # flags
             my @flags = split /\s*[,]\s*/, $1;
             $po = Locale::PO->new( -loaded_line_number => $line_number ) unless defined($po);
-			foreach my $flag (@flags)
-			{
-				$po->add_flag($flag);
-			}
+            foreach my $flag (@flags)
+            {
+                $po->add_flag($flag);
+            }
         }
         elsif (/^(#~\s+)?msgctxt\s+(.*)/) {
-			$po = Locale::PO->new( -loaded_line_number => $line_number ) unless defined($po);
-			$buffer{msgctxt} = $self->dequote($2);
-			$last_buffer = \$buffer{msgctxt};
-			$po->obsolete(1) if $1;
+            $po = Locale::PO->new( -loaded_line_number => $line_number ) unless defined($po);
+            $buffer{msgctxt} = $self->dequote($2);
+            $last_buffer = \$buffer{msgctxt};
+            $po->obsolete(1) if $1;
         }
         elsif (/^(#~\s+)?msgid\s+(.*)/) {
             $po = Locale::PO->new( -loaded_line_number => $line_number ) unless defined($po);
             $buffer{msgid} = $self->dequote($2);
             $last_buffer = \$buffer{msgid};
-			$po->obsolete(1) if $1;
+            $po->obsolete(1) if $1;
         }
         elsif (/^(#~\s+)?msgid_plural\s+(.*)/) {
             $po = Locale::PO->new( -loaded_line_number => $line_number ) unless defined($po);
             $buffer{msgid_plural} = $self->dequote($2);
             $last_buffer = \$buffer{msgid_plural};
-			$po->obsolete(1) if $1;
+            $po->obsolete(1) if $1;
         }
         elsif (/^(?:#~\s+)?msgstr\s+(.*)/) {
 
@@ -437,28 +437,27 @@ sub _load_file {
     if ( defined($po) ) {
 
         $po->msgctxt( $buffer{msgctxt} ) if defined $buffer{msgctxt};
-		$po->msgid( $buffer{msgid} ) if defined $buffer{msgid};
-		$po->msgid_plural( $buffer{msgid_plural} ) if defined $buffer{msgid_plural};
-		$po->msgstr( $buffer{msgstr} ) if defined $buffer{msgstr};
-		$po->msgstr_n( $buffer{msgstr_n} ) if defined $buffer{msgstr_n};
+        $po->msgid( $buffer{msgid} ) if defined $buffer{msgid};
+        $po->msgid_plural( $buffer{msgid_plural} ) if defined $buffer{msgid_plural};
+        $po->msgstr( $buffer{msgstr} ) if defined $buffer{msgstr};
+        $po->msgstr_n( $buffer{msgstr_n} ) if defined $buffer{msgstr_n};
 		
-		# ashash
-		if ($ashash) {
-			if ( $po->_hash_key_ok(\%entries) ) {
-				$entries{ $po->msgid } = $po;
-			}
-		}
-		# asarray
-		else {
-			push( @entries, $po );
-		}
+        # ashash
+        if ($ashash) {
+            if ( $po->_hash_key_ok(\%entries) ) {
+                $entries{ $po->msgid } = $po;
+            }
+        }
+        # asarray
+        else {
+            push( @entries, $po );
+        }
     }
     close IN;
     return ( $ashash ? \%entries : \@entries );
 }
 
-sub _hash_key_ok
-{
+sub _hash_key_ok {
 	my ($self, $entries) = @_;
 	
 	my $key = $self->msgid;
@@ -581,6 +580,8 @@ This method expects the new strings in unquoted form but returns the current str
 
 Set or get the translation context string from the object.
 
+This method expects the new string in unquoted form but returns the current string in quoted form.
+
 =item obsolete
 
 Returns 1 if the entry is obsolete.
@@ -637,7 +638,7 @@ This can take 3 values:
 		...
 	}
 
-Returns true if the flag exists in the entries #~ comment
+Returns true if the flag exists in the entry's #~ comment
 
 =item add_flag
 

@@ -16,17 +16,3 @@ INSTALLATION
     make
     make test
     make install
-
-REVISION HISTORY
-    0.19    Mar  2008 - Added msgctxt support
-    0.18    Mar  2008 - New maintainer, fixed some old bugs, updated POD
-    0.17    May  2007 - Fix to whitespace handling in load_file
-    0.16    Nov  2005 - msgid_plural, msgstr_n, test cleanup
-    0.15    Aug  2005 - Fix to flag output
-    0.14    Dec  2004 - Allow #. comments to be multiline
-    0.13    Oct  2004 - Fixes to empty comment handling
-    0.12    Oct  2004 - Fixes to multiline string handling
-    0.11    July 2000 - Minor fix to the test script
-    0.10    July 2000 - Initial release.
-
-
