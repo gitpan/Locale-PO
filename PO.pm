@@ -1,7 +1,7 @@
 package Locale::PO;
 use strict;
 use warnings;
-our $VERSION = '0.20';
+our $VERSION = '0.21';
 
 use Carp;
 
@@ -314,6 +314,7 @@ sub _load_file {
     my $self   = shift;
     my $file   = shift;
     my $ashash = shift;
+	my $class  = ref $self || $self;
     my ( @entries, %entries );
 	my $line_number = 0;
     my $po;
@@ -355,7 +356,7 @@ sub _load_file {
         elsif ( /^#\s+(.*)/ or /^#()$/ ) {
 
             # Translator comments
-            $po = Locale::PO->new( -loaded_line_number => $line_number ) unless defined($po);
+            $po = $class->new( -loaded_line_number => $line_number ) unless defined($po);
             if ( defined( $po->comment ) ) {
                 $po->comment( $po->comment . "\n$1" );
             }
@@ -366,7 +367,7 @@ sub _load_file {
         elsif (/^#\.\s*(.*)/) {
 
             # Automatic comments
-            $po = Locale::PO->new( -loaded_line_number => $line_number ) unless defined($po);
+            $po = $class->new( -loaded_line_number => $line_number ) unless defined($po);
             if ( defined( $po->automatic ) ) {
                 $po->automatic( $po->automatic . "\n$1" );
             }
@@ -377,7 +378,7 @@ sub _load_file {
         elsif (/^#:\s+(.*)/) {
 
             # reference
-            $po = Locale::PO->new( -loaded_line_number => $line_number ) unless defined($po);
+            $po = $class->new( -loaded_line_number => $line_number ) unless defined($po);
             if ( defined( $po->reference ) ) {
                 $po->reference( $po->reference . "\n$1" );
             }
@@ -389,26 +390,26 @@ sub _load_file {
 
             # flags
             my @flags = split /\s*[,]\s*/, $1;
-            $po = Locale::PO->new( -loaded_line_number => $line_number ) unless defined($po);
+            $po = $class->new( -loaded_line_number => $line_number ) unless defined($po);
             foreach my $flag (@flags)
             {
                 $po->add_flag($flag);
             }
         }
         elsif (/^(#~\s+)?msgctxt\s+(.*)/) {
-            $po = Locale::PO->new( -loaded_line_number => $line_number ) unless defined($po);
+            $po = $class->new( -loaded_line_number => $line_number ) unless defined($po);
             $buffer{msgctxt} = $self->dequote($2);
             $last_buffer = \$buffer{msgctxt};
             $po->obsolete(1) if $1;
         }
         elsif (/^(#~\s+)?msgid\s+(.*)/) {
-            $po = Locale::PO->new( -loaded_line_number => $line_number ) unless defined($po);
+            $po = $class->new( -loaded_line_number => $line_number ) unless defined($po);
             $buffer{msgid} = $self->dequote($2);
             $last_buffer = \$buffer{msgid};
             $po->obsolete(1) if $1;
         }
         elsif (/^(#~\s+)?msgid_plural\s+(.*)/) {
-            $po = Locale::PO->new( -loaded_line_number => $line_number ) unless defined($po);
+            $po = $class->new( -loaded_line_number => $line_number ) unless defined($po);
             $buffer{msgid_plural} = $self->dequote($2);
             $last_buffer = \$buffer{msgid_plural};
             $po->obsolete(1) if $1;
@@ -701,7 +702,7 @@ are sorted alphabetically by untranslated string.
 
 =head1 AUTHOR
 
-Ken Prows, perl@xev.net
+Maintainer: Ken Prows, perl@xev.net
 
 Original version by: Alan Schwartz, alansz@pennmush.org
 
@@ -715,6 +716,8 @@ I'm hesitant to change this in fear of breaking the modules/scripts of people al
 
 Locale::PO requires blank lines between entries, but Uniforum style PO
 files don't have any.
+
+Please submit all bug requests using CPAN's ticketing system.
 
 =head1 SEE ALSO
 

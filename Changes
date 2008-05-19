@@ -1,5 +1,8 @@
 Revision history for Perl extension Locale::PO.
 
+0.21  May 19 2008
+   -  BUG #35939 - Locale::PO is now correctly subclassable
+      (patch provided by Cosimo Streppone)
 0.20  Mar 15 2008
    -  BUG #34110 - fixed a rather serious problem with the dist not building on 
       anything but a Mac
@@ -42,5 +45,5 @@ Revision history for Perl extension Locale::PO.
 	- test.pl script no longer uses diff -B, which is nonportable.
 
 0.10  Sun Jul 16 14:24:39 2000
-	- original version; created by h2xs 1.19
+	- original version; created by Alan Schwartz
 
