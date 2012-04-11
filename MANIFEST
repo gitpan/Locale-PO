@@ -1,7 +1,9 @@
 Changes
-MANIFEST
-META.yml                                 Module meta-data (added by MakeMaker)
 Makefile.PL
+MANIFEST
+MANIFEST.SKIP
+MYMETA.json
+MYMETA.yml
 PO.pm
 README
 t/plurals.pot
@@ -10,3 +12,5 @@ t/singular.t
 t/subclass.t
 t/test.pot
 t/test1.pot
+META.yml                                 Module YAML meta-data (added by MakeMaker)
+META.json                                Module JSON meta-data (added by MakeMaker)

@@ -1,0 +1,7 @@
+^Locale-PO-.*\.tar\.gz$
+^\.git.*
+^blib.*
+^Makefile(\.old)?$
+^pm_to_blib$
+\.bak$
+^Locale-PO-.*/

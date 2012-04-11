@@ -1,7 +1,7 @@
 package Locale::PO;
 use strict;
 use warnings;
-our $VERSION = '0.21';
+our $VERSION = '0.2103';
 
 use Carp;
 
@@ -101,21 +101,25 @@ sub obsolete {
 
 sub fuzzy {
     my $self = shift;
-	if (@_) {
-		my $value = shift;
-		$value? $self->add_flag('fuzzy') : $self->remove_flag('fuzzy');
-	}
+
+    if (@_) {
+	    my $value = shift;
+	    $value? $self->add_flag('fuzzy') : $self->remove_flag('fuzzy');
+    }
+
     return $self->has_flag('fuzzy');
 }
 
 sub c_format {
     my $self = shift;
-	return $self->_tri_value_flag('c-format', @_);
+
+    return $self->_tri_value_flag('c-format', @_);
 }
 
 sub php_format {
     my $self = shift;
-	return $self->_tri_value_flag('php-format', @_);
+
+    return $self->_tri_value_flag('php-format', @_);
 }
 
 sub _flags {
@@ -127,52 +131,52 @@ sub _tri_value_flag {
     my $self = shift;
     my $flag_name = shift;
     if (@_) { # set or clear the flags
-		my $value = shift;
-		if (!defined($value) || $value eq "") {
-			$self->remove_flag("$flag_name");
-			$self->remove_flag("no-$flag_name");
-		    return undef;
-		}
-		elsif ($value) {
-			$self->add_flag("$flag_name");
-			$self->remove_flag("no-$flag_name");
-		    return 1;
-		}
-		else {
-			$self->add_flag("no-$flag_name");
-		    $self->remove_flag("$flag_name");
-		    return 0;
-		}
+	my $value = shift;
+	if (!defined($value) || $value eq "") {
+		$self->remove_flag("$flag_name");
+		$self->remove_flag("no-$flag_name");
+	    return undef;
+	}
+	elsif ($value) {
+		$self->add_flag("$flag_name");
+		$self->remove_flag("no-$flag_name");
+	    return 1;
+	}
+	else {
+		$self->add_flag("no-$flag_name");
+	    $self->remove_flag("$flag_name");
+	    return 0;
+	}
     }
     else { # check the flags
-		return 1 if $self->has_flag("$flag_name");
-		return 0 if $self->has_flag("no-$flag_name");
-		return undef;
+	return 1 if $self->has_flag("$flag_name");
+	return 0 if $self->has_flag("no-$flag_name");
+	return undef;
     }
 }
 
 sub add_flag {
-	my ($self, $flag_name) = @_;
-	push @{$self->_flags}, $flag_name;
-	return;
+    my ($self, $flag_name) = @_;
+    push @{$self->_flags}, $flag_name;
+    return;
 }
 
 sub remove_flag {
-	my ($self, $flag_name) = @_;
-	my @new_flags;
-	foreach my $flag (@{$self->_flags}) {
-		push @new_flags, $flag unless $flag eq $flag_name;
-	}
-	$self->_flags(\@new_flags);
-	return;
+    my ($self, $flag_name) = @_;
+    my @new_flags;
+    foreach my $flag (@{$self->_flags}) {
+	    push @new_flags, $flag unless $flag eq $flag_name;
+    }
+    $self->_flags(\@new_flags);
+    return;
 }
 
 sub has_flag {
-	my ($self, $flag_name) = @_;
-	foreach my $flag (@{$self->_flags}) {
-		return 1 if $flag eq $flag_name;
-	}
-	return;
+    my ($self, $flag_name) = @_;
+    foreach my $flag (@{$self->_flags}) {
+	    return 1 if $flag eq $flag_name;
+    }
+    return;
 }
 
 sub loaded_line_number {
@@ -187,7 +191,6 @@ sub _normalize_str {
 
     # This isn't quite perfect, but it's fast and easy
     if ( $dequoted =~ /(^|[^\\])(\\\\)*\\n./ ) {
-
         # Multiline
         my $output;
         my @lines;
@@ -201,7 +204,6 @@ sub _normalize_str {
         return $output;
     }
     else {
-
         # Single line
         return "$string\n";
     }
@@ -209,8 +211,9 @@ sub _normalize_str {
 
 sub dump {
     my $self = shift;
-	my $obsolete = $self->obsolete? '#~ ' : '';
+    my $obsolete = $self->obsolete? '#~ ' : '';
     my $dump;
+
     $dump = $self->_dump_multi_comment( $self->comment, "# " )
       if ( $self->comment );
     $dump .= $self->_dump_multi_comment( $self->automatic, "#. " )
@@ -219,11 +222,13 @@ sub dump {
       if ( $self->reference );
 
     my $flags = '';
-    foreach my $flag (@{$self->_flags})
-    {
+
+    foreach my $flag (@{$self->_flags}) {
         $flags .= ", $flag"
     }
-    $dump .= "#$flags\n" if length $flags;
+
+    $dump .= "#$flags\n"
+      if length $flags;
 
     $dump .= "${obsolete}msgctxt " . $self->_normalize_str( $self->msgctxt )
 		if $self->msgctxt;
@@ -273,20 +278,22 @@ sub dequote {
 
 sub save_file_fromarray {
     my $self = shift;
-    $self->_save_file( @_, 0 );
+    $self->_save_file( 0, @_ );
 }
 
 sub save_file_fromhash {
     my $self = shift;
-    $self->_save_file( @_, 1 );
+    $self->_save_file( 1, @_ );
 }
 
 sub _save_file {
     my $self    = shift;
+    my $ashash  = shift;
     my $file    = shift;
     my $entries = shift;
-    my $ashash  = shift;
-    open( OUT, ">$file" ) or return undef;
+    my $encoding = shift;
+
+    open( OUT, defined($encoding) ? ">:encoding($encoding)" : ">", $file ) or return undef;
     if ($ashash) {
         foreach ( sort keys %$entries ) {
             print OUT $entries->{$_}->dump;
@@ -297,56 +304,56 @@ sub _save_file {
             print OUT $_->dump;
         }
     }
+
     close OUT;
 }
 
 sub load_file_asarray {
     my $self = shift;
-    $self->_load_file( $_[0], 0 );
+    $self->_load_file( 0, @_ );
 }
 
 sub load_file_ashash {
     my $self = shift;
-    $self->_load_file( $_[0], 1 );
+    $self->_load_file( 1, @_ );
 }
 
 sub _load_file {
     my $self   = shift;
-    my $file   = shift;
     my $ashash = shift;
-	my $class  = ref $self || $self;
+    my $file   = shift;
+    my $encoding = shift;
+    my $class  = ref $self || $self;
     my ( @entries, %entries );
-	my $line_number = 0;
+    my $line_number = 0;
     my $po;
     my %buffer;
     my $last_buffer;
-    open( IN, "<$file" ) or return undef;
+
+    open( IN, defined($encoding) ? "<:encoding($encoding)" : "<", $file ) or return undef;
 
     while (<IN>) {
         chop;
 		$line_number++;
         if (/^$/) {
-
             # Empty line. End of an entry.
 
             if ( defined($po) ) {
-            
             	$po->msgctxt( $buffer{msgctxt} ) if defined $buffer{msgctxt};
                 $po->msgid( $buffer{msgid} ) if defined $buffer{msgid};
                 $po->msgid_plural( $buffer{msgid_plural} ) if defined $buffer{msgid_plural};
                 $po->msgstr( $buffer{msgstr} ) if defined $buffer{msgstr};
                 $po->msgstr_n( $buffer{msgstr_n} ) if defined $buffer{msgstr_n};
-				
-				# ashash
-				if ($ashash) {
-					if ( $po->_hash_key_ok(\%entries) ) {
-						$entries{ $po->msgid } = $po;
-					}
-				}
-				# asarray
-				else {
-					push( @entries, $po );
-				}
+
+		# ashash
+		if ($ashash) {
+		    $entries{ $po->msgid } = $po
+		      if ( $po->_hash_key_ok(\%entries) );
+		}
+		# asarray
+		else {
+		    push( @entries, $po );
+		}
 
                 undef $po;
                 undef $last_buffer;
@@ -437,12 +444,17 @@ sub _load_file {
     }
     if ( defined($po) ) {
 
-        $po->msgctxt( $buffer{msgctxt} ) if defined $buffer{msgctxt};
-        $po->msgid( $buffer{msgid} ) if defined $buffer{msgid};
-        $po->msgid_plural( $buffer{msgid_plural} ) if defined $buffer{msgid_plural};
-        $po->msgstr( $buffer{msgstr} ) if defined $buffer{msgstr};
-        $po->msgstr_n( $buffer{msgstr_n} ) if defined $buffer{msgstr_n};
-		
+        $po->msgctxt( $buffer{msgctxt} )
+	  if defined $buffer{msgctxt};
+        $po->msgid( $buffer{msgid} )
+	  if defined $buffer{msgid};
+        $po->msgid_plural( $buffer{msgid_plural} )
+	  if defined $buffer{msgid_plural};
+        $po->msgstr( $buffer{msgstr} )
+	  if defined $buffer{msgstr};
+        $po->msgstr_n( $buffer{msgstr_n} )
+	  if defined $buffer{msgstr_n};
+
         # ashash
         if ($ashash) {
             if ( $po->_hash_key_ok(\%entries) ) {
@@ -460,18 +472,17 @@ sub _load_file {
 
 sub _hash_key_ok {
 	my ($self, $entries) = @_;
-	
+
 	my $key = $self->msgid;
-	
+
 	if ($entries->{$key}) {
-	
-		# don't overwrite non-obsolete entries with obsolete ones
-		return if ( ($self->obsolete) && (not $entries->{$key}->obsolete) );
-		
-		# don't overwrite translated entries with untranslated ones
-		return if ( ($self->msgstr !~ /\w/) && ($entries->{$key}->msgstr =~ /\w/) );
+	    # don't overwrite non-obsolete entries with obsolete ones
+	    return if ( ($self->obsolete) && (not $entries->{$key}->obsolete) );
+
+	    # don't overwrite translated entries with untranslated ones
+	    return if ( ($self->msgstr !~ /\w/) && ($entries->{$key}->msgstr =~ /\w/) );
 	}
-	
+
 	return 1;
 }
 
@@ -488,25 +499,25 @@ Locale::PO - Perl module for manipulating .po entries from GNU gettext
 
 =head1 SYNOPSIS
 
-	use Locale::PO;
+    use Locale::PO;
 
-	$po = new Locale::PO([-option=>value,...])
-	[$string =] $po->msgid([new string]);
-	[$string =] $po->msgstr([new string]);
-	[$string =] $po->comment([new string]);
-	[$string =] $po->automatic([new string]);
-	[$string =] $po->reference([new string]);
-	[$value =] $po->fuzzy([value]);
-	[$value =] $po->add_flag('c-format');
-	print $po->dump;
+    $po = new Locale::PO([-option=>value,...])
+    [$string =] $po->msgid([new string]);
+    [$string =] $po->msgstr([new string]);
+    [$string =] $po->comment([new string]);
+    [$string =] $po->automatic([new string]);
+    [$string =] $po->reference([new string]);
+    [$value =] $po->fuzzy([value]);
+    [$value =] $po->add_flag('c-format');
+    print $po->dump;
 
-	$quoted_string = $po->quote($string);
-	$string = $po->dequote($quoted_string);
+    $quoted_string = $po->quote($string);
+    $string = $po->dequote($quoted_string);
 
-	$aref = Locale::PO->load_file_asarray(<filename>);
-	$href = Locale::PO->load_file_ashash(<filename>);
-	Locale::PO->save_file_fromarray(<filename>,$aref);
-	Locale::PO->save_file_fromhash(<filename>,$href);
+    $aref = Locale::PO->load_file_asarray(<filename>,[encoding]);
+    $href = Locale::PO->load_file_ashash(<filename>,[encoding]);
+    Locale::PO->save_file_fromarray(<filename>,$aref,[encoding]);
+    Locale::PO->save_file_fromhash(<filename>,$href,[encoding]);
 
 =head1 DESCRIPTION
 
@@ -520,14 +531,14 @@ interface in which each entry in a .po file is a Locale::PO object.
 
 =item new
 
-	my Locale::PO $po = new Locale::PO;
-	my Locale::PO $po = new Locale::PO(%options);
+    my Locale::PO $po = new Locale::PO;
+    my Locale::PO $po = new Locale::PO(%options);
 
 Create a new Locale::PO object to represent a po entry.
-You can optionally set the attributes of the entry by passing 
+You can optionally set the attributes of the entry by passing
 a list/hash of the form:
 
-	-option=>value, -option=>value, etc.
+    -option=>value, -option=>value, etc.
 
 Where options are msgid, msgstr, msgctxt, comment, automatic, reference,
 fuzzy, and c-format. See accessor methods below.
@@ -535,14 +546,14 @@ fuzzy, and c-format. See accessor methods below.
 To generate a po file header, add an entry with an empty
 msgid, like this:
 
-	$po = new Locale::PO(-msgid=>'', -msgstr=>
-		"Project-Id-Version: PACKAGE VERSION\\n" .
-		"PO-Revision-Date: YEAR-MO-DA HO:MI +ZONE\\n" .
-		"Last-Translator: FULL NAME <EMAIL@ADDRESS>\\n" .
-		"Language-Team: LANGUAGE <LL@li.org>\\n" .
-		"MIME-Version: 1.0\\n" .
-		"Content-Type: text/plain; charset=CHARSET\\n" .
-		"Content-Transfer-Encoding: ENCODING\\n");
+    $po = new Locale::PO(-msgid=>'', -msgstr=>
+	    "Project-Id-Version: PACKAGE VERSION\\n" .
+	    "PO-Revision-Date: YEAR-MO-DA HO:MI +ZONE\\n" .
+	    "Last-Translator: FULL NAME <EMAIL@ADDRESS>\\n" .
+	    "Language-Team: LANGUAGE <LL@li.org>\\n" .
+	    "MIME-Version: 1.0\\n" .
+	    "Content-Type: text/plain; charset=CHARSET\\n" .
+	    "Content-Transfer-Encoding: ENCODING\\n");
 
 =item msgid
 
@@ -568,12 +579,12 @@ Get or set the translations if there are purals involved. Takes and
 returns a hashref where the keys are the 'N' case and the values are
 the strings. eg:
 
-	$po->msgstr_n(
-	    {
-	        0 => 'found %d plural translations',
-	        1 => 'found %d singular translation',
-	    }
-	);
+    $po->msgstr_n(
+	{
+	    0 => 'found %d plural translations',
+	    1 => 'found %d singular translation',
+	}
+    );
 
 This method expects the new strings in unquoted form but returns the current strings in quoted form.
 
@@ -601,7 +612,7 @@ each comment line nor the newline at the end of the last comment line.
 
 =item automatic
 
-Set or get automatic comments from the object (inserted by 
+Set or get automatic comments from the object (inserted by
 emacs po-mode or xgettext).
 
 If there are no such comments, then the value is undef.  Otherwise,
@@ -623,7 +634,7 @@ When setting, use 1 to turn on fuzzy, and 0 to turn it off.
 
 Set or get the c-format or no-c-format flag on the object.
 
-This can take 3 values: 
+This can take 3 values:
 1 implies c-format, 0 implies no-c-format, and undefined implies neither.
 
 =item php_format
@@ -635,21 +646,21 @@ This can take 3 values:
 
 =item has_flag
 
-	if ($po->has_flag('perl-format')) {
-		...
-	}
+    if ($po->has_flag('perl-format')) {
+	    ...
+    }
 
 Returns true if the flag exists in the entry's #~ comment
 
 =item add_flag
 
-	$po->add_flag('perl-format');
+    $po->add_flag('perl-format');
 
 Adds the flag to the #~ comment
 
 =item remove_flag
 
-	$po->remove_flag('perl-format');
+    $po->remove_flag('perl-format');
 
 Removes the flag from the #~ comment
 
@@ -677,7 +688,8 @@ Returns a quoted po string to its natural form.
 
 Given the filename of a po-file, reads the file and returns a
 reference to a list of Locale::PO objects corresponding to the contents of
-the file, in the same order.
+the file, in the same order.  Accepts an optional encoding parameter (e.g.
+"utf8") which defines how the po-file's input stream will be configured.
 
 =item load_file_ashash
 
@@ -685,18 +697,23 @@ Given the filename of a po-file, reads the file and returns a
 reference to a hash of Locale::PO objects corresponding to the contents of
 the file. The hash keys are the untranslated strings, so this is a cheap
 way to remove duplicates. The method will prefer to keep entries that
-have been translated.
+have been translated.  Accepts an optional encoding parameter (e.g.
+"utf8") which defines how the po-file's input stream will be configured.
 
 =item save_file_fromarray
 
 Given a filename and a reference to a list of Locale::PO objects,
-saves those objects to the file, creating a po-file.
+saves those objects to the file, creating a po-file.  Accepts an optional
+encoding parameter (e.g. "utf8") which defines how the po-file's output
+stream will be configured.
 
 =item save_file_fromhash
 
 Given a filename and a reference to a hash of Locale::PO objects,
 saves those objects to the file, creating a po-file. The entries
-are sorted alphabetically by untranslated string.
+are sorted alphabetically by untranslated string.  Accepts an optional
+encoding parameter (e.g. "utf8") which defines how the po-file's output
+stream will be configured.
 
 =back
 
