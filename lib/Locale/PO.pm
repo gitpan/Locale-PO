@@ -1,7 +1,7 @@
 package Locale::PO;
 use strict;
 use warnings;
-our $VERSION = '0.2103';
+our $VERSION = '0.22';
 
 use Carp;
 
@@ -12,6 +12,9 @@ sub new {
     my $self    = {};
     bless $self, $class;
 	$self->_flags([]);
+    $self->fuzzy_msgid( $options{'-fuzzy_msgid'} ) if defined( $options{'-fuzzy_msgid'} );
+    $self->fuzzy_msgid_plural( $options{'-fuzzy_msgid_plural'} )
+      if defined( $options{'-fuzzy_msgid_plural'} );
     $self->msgid( $options{'-msgid'} ) if defined( $options{'-msgid'} );
     $self->msgid_plural( $options{'-msgid_plural'} )
       if defined( $options{'-msgid_plural'} );
@@ -19,6 +22,7 @@ sub new {
     $self->msgstr_n( $options{'-msgstr_n'} )
       if defined( $options{'-msgstr_n'} );
 	$self->msgctxt( $options{'-msgctxt'} ) if defined( $options{'-msgctxt'} );
+	$self->fuzzy_msgctxt( $options{'-fuzzy_msgctxt'} ) if defined( $options{'-fuzzy_msgctxt'} );
     $self->comment( $options{'-comment'} ) if defined( $options{'-comment'} );
     $self->fuzzy( $options{'-fuzzy'} )     if defined( $options{'-fuzzy'} );
     $self->automatic( $options{'-automatic'} )
@@ -31,6 +35,24 @@ sub new {
     $self->c_format(0) if defined( $options{'-no_c_format'} );
 	$self->loaded_line_number( $options{'-loaded_line_number'} ) if defined( $options{'-loaded_line_number'} );
     return $self;
+}
+
+sub fuzzy_msgctxt {
+	my $self = shift;
+	@_ ? $self->{'fuzzy_msgctxt'} = $self->quote(shift) : $self->{'fuzzy_msgctxt'};
+}
+
+sub fuzzy_msgid {
+    my $self = shift;
+    @_ ? $self->{'fuzzy_msgid'} = $self->quote(shift) : $self->{'fuzzy_msgid'};
+}
+
+sub fuzzy_msgid_plural {
+    my $self = shift;
+    @_
+      ? $self->{'fuzzy_msgid_plural'} =
+        $self->quote(shift)
+      : $self->{'fuzzy_msgid_plural'};
 }
 
 sub msgctxt {
@@ -101,25 +123,21 @@ sub obsolete {
 
 sub fuzzy {
     my $self = shift;
-
-    if (@_) {
-	    my $value = shift;
-	    $value? $self->add_flag('fuzzy') : $self->remove_flag('fuzzy');
-    }
-
+	if (@_) {
+		my $value = shift;
+		$value? $self->add_flag('fuzzy') : $self->remove_flag('fuzzy');
+	}
     return $self->has_flag('fuzzy');
 }
 
 sub c_format {
     my $self = shift;
-
-    return $self->_tri_value_flag('c-format', @_);
+	return $self->_tri_value_flag('c-format', @_);
 }
 
 sub php_format {
     my $self = shift;
-
-    return $self->_tri_value_flag('php-format', @_);
+	return $self->_tri_value_flag('php-format', @_);
 }
 
 sub _flags {
@@ -131,52 +149,52 @@ sub _tri_value_flag {
     my $self = shift;
     my $flag_name = shift;
     if (@_) { # set or clear the flags
-	my $value = shift;
-	if (!defined($value) || $value eq "") {
-		$self->remove_flag("$flag_name");
-		$self->remove_flag("no-$flag_name");
-	    return undef;
-	}
-	elsif ($value) {
-		$self->add_flag("$flag_name");
-		$self->remove_flag("no-$flag_name");
-	    return 1;
-	}
-	else {
-		$self->add_flag("no-$flag_name");
-	    $self->remove_flag("$flag_name");
-	    return 0;
-	}
+		my $value = shift;
+		if (!defined($value) || $value eq "") {
+			$self->remove_flag("$flag_name");
+			$self->remove_flag("no-$flag_name");
+		    return undef;
+		}
+		elsif ($value) {
+			$self->add_flag("$flag_name");
+			$self->remove_flag("no-$flag_name");
+		    return 1;
+		}
+		else {
+			$self->add_flag("no-$flag_name");
+		    $self->remove_flag("$flag_name");
+		    return 0;
+		}
     }
     else { # check the flags
-	return 1 if $self->has_flag("$flag_name");
-	return 0 if $self->has_flag("no-$flag_name");
-	return undef;
+		return 1 if $self->has_flag("$flag_name");
+		return 0 if $self->has_flag("no-$flag_name");
+		return undef;
     }
 }
 
 sub add_flag {
-    my ($self, $flag_name) = @_;
-    push @{$self->_flags}, $flag_name;
-    return;
+	my ($self, $flag_name) = @_;
+	push @{$self->_flags}, $flag_name;
+	return;
 }
 
 sub remove_flag {
-    my ($self, $flag_name) = @_;
-    my @new_flags;
-    foreach my $flag (@{$self->_flags}) {
-	    push @new_flags, $flag unless $flag eq $flag_name;
-    }
-    $self->_flags(\@new_flags);
-    return;
+	my ($self, $flag_name) = @_;
+	my @new_flags;
+	foreach my $flag (@{$self->_flags}) {
+		push @new_flags, $flag unless $flag eq $flag_name;
+	}
+	$self->_flags(\@new_flags);
+	return;
 }
 
 sub has_flag {
-    my ($self, $flag_name) = @_;
-    foreach my $flag (@{$self->_flags}) {
-	    return 1 if $flag eq $flag_name;
-    }
-    return;
+	my ($self, $flag_name) = @_;
+	foreach my $flag (@{$self->_flags}) {
+		return 1 if $flag eq $flag_name;
+	}
+	return;
 }
 
 sub loaded_line_number {
@@ -191,6 +209,7 @@ sub _normalize_str {
 
     # This isn't quite perfect, but it's fast and easy
     if ( $dequoted =~ /(^|[^\\])(\\\\)*\\n./ ) {
+
         # Multiline
         my $output;
         my @lines;
@@ -204,16 +223,30 @@ sub _normalize_str {
         return $output;
     }
     else {
+
         # Single line
         return "$string\n";
     }
 }
 
+sub _fuzzy_normalize_str {
+    my $self = shift;
+    my $string = shift;
+    my $prefix = shift;
+
+    my $normalized = $self->_normalize_str($string);
+
+    # on newlines, start them with "#| " or "#~| "
+    $normalized =~ s/\n"/\n$prefix"/g;
+
+    return $normalized;
+}
+
 sub dump {
     my $self = shift;
-    my $obsolete = $self->obsolete? '#~ ' : '';
+	my $obsolete = $self->obsolete? '#~ ' : '';
+    my $fuzzy_prefix = $self->obsolete? '#~| ' : '#| ';
     my $dump;
-
     $dump = $self->_dump_multi_comment( $self->comment, "# " )
       if ( $self->comment );
     $dump .= $self->_dump_multi_comment( $self->automatic, "#. " )
@@ -222,13 +255,21 @@ sub dump {
       if ( $self->reference );
 
     my $flags = '';
-
-    foreach my $flag (@{$self->_flags}) {
+    foreach my $flag (@{$self->_flags})
+    {
         $flags .= ", $flag"
     }
+    $dump .= "#$flags\n" if length $flags;
 
-    $dump .= "#$flags\n"
-      if length $flags;
+    $dump .= "${fuzzy_prefix}msgctxt "
+          . $self->_fuzzy_normalize_str( $self->fuzzy_msgctxt, $fuzzy_prefix )
+		if $self->fuzzy_msgctxt;
+    $dump .= "${fuzzy_prefix}msgid "
+          . $self->_fuzzy_normalize_str( $self->fuzzy_msgid, $fuzzy_prefix )
+		if $self->fuzzy_msgid;
+    $dump .= "${fuzzy_prefix}msgid_plural "
+          . $self->_fuzzy_normalize_str( $self->fuzzy_msgid_plural, $fuzzy_prefix )
+		if $self->fuzzy_msgid_plural;
 
     $dump .= "${obsolete}msgctxt " . $self->_normalize_str( $self->msgctxt )
 		if $self->msgctxt;
@@ -278,22 +319,20 @@ sub dequote {
 
 sub save_file_fromarray {
     my $self = shift;
-    $self->_save_file( 0, @_ );
+    $self->_save_file( @_, 0 );
 }
 
 sub save_file_fromhash {
     my $self = shift;
-    $self->_save_file( 1, @_ );
+    $self->_save_file( @_, 1 );
 }
 
 sub _save_file {
     my $self    = shift;
-    my $ashash  = shift;
     my $file    = shift;
     my $entries = shift;
-    my $encoding = shift;
-
-    open( OUT, defined($encoding) ? ">:encoding($encoding)" : ">", $file ) or return undef;
+    my $ashash  = shift;
+    open( OUT, ">$file" ) or return undef;
     if ($ashash) {
         foreach ( sort keys %$entries ) {
             print OUT $entries->{$_}->dump;
@@ -304,56 +343,59 @@ sub _save_file {
             print OUT $_->dump;
         }
     }
-
     close OUT;
 }
 
 sub load_file_asarray {
     my $self = shift;
-    $self->_load_file( 0, @_ );
+    $self->_load_file( $_[0], 0 );
 }
 
 sub load_file_ashash {
     my $self = shift;
-    $self->_load_file( 1, @_ );
+    $self->_load_file( $_[0], 1 );
 }
 
 sub _load_file {
     my $self   = shift;
-    my $ashash = shift;
     my $file   = shift;
-    my $encoding = shift;
-    my $class  = ref $self || $self;
+    my $ashash = shift;
+	my $class  = ref $self || $self;
     my ( @entries, %entries );
-    my $line_number = 0;
+	my $line_number = 0;
     my $po;
     my %buffer;
     my $last_buffer;
-
-    open( IN, defined($encoding) ? "<:encoding($encoding)" : "<", $file ) or return undef;
+    open( IN, "<$file" ) or return undef;
 
     while (<IN>) {
         chop;
 		$line_number++;
         if (/^$/) {
+
             # Empty line. End of an entry.
 
             if ( defined($po) ) {
+            
+            	$po->fuzzy_msgctxt( $buffer{fuzzy_msgctxt} ) if defined $buffer{fuzzy_msgctxt};
+                $po->fuzzy_msgid( $buffer{fuzzy_msgid} ) if defined $buffer{fuzzy_msgid};
+                $po->fuzzy_msgid_plural( $buffer{fuzzy_msgid_plural} ) if defined $buffer{fuzzy_msgid_plural};
             	$po->msgctxt( $buffer{msgctxt} ) if defined $buffer{msgctxt};
                 $po->msgid( $buffer{msgid} ) if defined $buffer{msgid};
                 $po->msgid_plural( $buffer{msgid_plural} ) if defined $buffer{msgid_plural};
                 $po->msgstr( $buffer{msgstr} ) if defined $buffer{msgstr};
                 $po->msgstr_n( $buffer{msgstr_n} ) if defined $buffer{msgstr_n};
-
-		# ashash
-		if ($ashash) {
-		    $entries{ $po->msgid } = $po
-		      if ( $po->_hash_key_ok(\%entries) );
-		}
-		# asarray
-		else {
-		    push( @entries, $po );
-		}
+				
+				# ashash
+				if ($ashash) {
+					if ( $po->_hash_key_ok(\%entries) ) {
+						$entries{ $po->msgid } = $po;
+					}
+				}
+				# asarray
+				else {
+					push( @entries, $po );
+				}
 
                 undef $po;
                 undef $last_buffer;
@@ -403,6 +445,24 @@ sub _load_file {
                 $po->add_flag($flag);
             }
         }
+        elsif (/^#(~)?\|\s+msgctxt\s+(.*)/) {
+            $po = $class->new( -loaded_line_number => $line_number ) unless defined($po);
+            $buffer{fuzzy_msgctxt} = $self->dequote($2);
+            $last_buffer = \$buffer{fuzzy_msgctxt};
+            $po->obsolete(1) if $1;
+        }
+        elsif (/^#(~)?\|\s+msgid\s+(.*)/) {
+            $po = $class->new( -loaded_line_number => $line_number ) unless defined($po);
+            $buffer{fuzzy_msgid} = $self->dequote($2);
+            $last_buffer = \$buffer{fuzzy_msgid};
+            $po->obsolete(1) if $1;
+        }
+        elsif (/^#(~)?\|\s+msgid_plural\s+(.*)/) {
+            $po = $class->new( -loaded_line_number => $line_number ) unless defined($po);
+            $buffer{fuzzy_msgid_plural} = $self->dequote($2);
+            $last_buffer = \$buffer{fuzzy_msgid_plural};
+            $po->obsolete(1) if $1;
+        }
         elsif (/^(#~\s+)?msgctxt\s+(.*)/) {
             $po = $class->new( -loaded_line_number => $line_number ) unless defined($po);
             $buffer{msgctxt} = $self->dequote($2);
@@ -433,10 +493,14 @@ sub _load_file {
             $buffer{msgstr_n}{$1} = $self->dequote($2);
             $last_buffer = \$buffer{msgstr_n}{$1};
         }
-        elsif (/^(?:#~\s+)?"/) {
+        elsif (/^(?:#(?:~|~\||\|)\s+)?(".*)/) {
 
-            # contined string
-            $$last_buffer .= $self->dequote($_);
+            # continued string. Accounts for:
+            #   normal          : "string"
+            #   obsolete        : #~ "string"
+            #   fuzzy           : #| "string"
+            #   fuzzy+obsolete  : #~| "string"
+            $$last_buffer .= $self->dequote($1);
         }
         else {
             warn "Strange line at $file line $line_number: $_\n";
@@ -444,17 +508,12 @@ sub _load_file {
     }
     if ( defined($po) ) {
 
-        $po->msgctxt( $buffer{msgctxt} )
-	  if defined $buffer{msgctxt};
-        $po->msgid( $buffer{msgid} )
-	  if defined $buffer{msgid};
-        $po->msgid_plural( $buffer{msgid_plural} )
-	  if defined $buffer{msgid_plural};
-        $po->msgstr( $buffer{msgstr} )
-	  if defined $buffer{msgstr};
-        $po->msgstr_n( $buffer{msgstr_n} )
-	  if defined $buffer{msgstr_n};
-
+        $po->msgctxt( $buffer{msgctxt} ) if defined $buffer{msgctxt};
+        $po->msgid( $buffer{msgid} ) if defined $buffer{msgid};
+        $po->msgid_plural( $buffer{msgid_plural} ) if defined $buffer{msgid_plural};
+        $po->msgstr( $buffer{msgstr} ) if defined $buffer{msgstr};
+        $po->msgstr_n( $buffer{msgstr_n} ) if defined $buffer{msgstr_n};
+		
         # ashash
         if ($ashash) {
             if ( $po->_hash_key_ok(\%entries) ) {
@@ -472,17 +531,18 @@ sub _load_file {
 
 sub _hash_key_ok {
 	my ($self, $entries) = @_;
-
+	
 	my $key = $self->msgid;
-
+	
 	if ($entries->{$key}) {
-	    # don't overwrite non-obsolete entries with obsolete ones
-	    return if ( ($self->obsolete) && (not $entries->{$key}->obsolete) );
-
-	    # don't overwrite translated entries with untranslated ones
-	    return if ( ($self->msgstr !~ /\w/) && ($entries->{$key}->msgstr =~ /\w/) );
+	
+		# don't overwrite non-obsolete entries with obsolete ones
+		return if ( ($self->obsolete) && (not $entries->{$key}->obsolete) );
+		
+		# don't overwrite translated entries with untranslated ones
+		return if ( ($self->msgstr !~ /\w/) && ($entries->{$key}->msgstr =~ /\w/) );
 	}
-
+	
 	return 1;
 }
 
@@ -499,25 +559,25 @@ Locale::PO - Perl module for manipulating .po entries from GNU gettext
 
 =head1 SYNOPSIS
 
-    use Locale::PO;
+	use Locale::PO;
 
-    $po = new Locale::PO([-option=>value,...])
-    [$string =] $po->msgid([new string]);
-    [$string =] $po->msgstr([new string]);
-    [$string =] $po->comment([new string]);
-    [$string =] $po->automatic([new string]);
-    [$string =] $po->reference([new string]);
-    [$value =] $po->fuzzy([value]);
-    [$value =] $po->add_flag('c-format');
-    print $po->dump;
+	$po = new Locale::PO([-option=>value,...])
+	[$string =] $po->msgid([new string]);
+	[$string =] $po->msgstr([new string]);
+	[$string =] $po->comment([new string]);
+	[$string =] $po->automatic([new string]);
+	[$string =] $po->reference([new string]);
+	[$value =] $po->fuzzy([value]);
+	[$value =] $po->add_flag('c-format');
+	print $po->dump;
 
-    $quoted_string = $po->quote($string);
-    $string = $po->dequote($quoted_string);
+	$quoted_string = $po->quote($string);
+	$string = $po->dequote($quoted_string);
 
-    $aref = Locale::PO->load_file_asarray(<filename>,[encoding]);
-    $href = Locale::PO->load_file_ashash(<filename>,[encoding]);
-    Locale::PO->save_file_fromarray(<filename>,$aref,[encoding]);
-    Locale::PO->save_file_fromhash(<filename>,$href,[encoding]);
+	$aref = Locale::PO->load_file_asarray(<filename>);
+	$href = Locale::PO->load_file_ashash(<filename>);
+	Locale::PO->save_file_fromarray(<filename>,$aref);
+	Locale::PO->save_file_fromhash(<filename>,$href);
 
 =head1 DESCRIPTION
 
@@ -531,29 +591,30 @@ interface in which each entry in a .po file is a Locale::PO object.
 
 =item new
 
-    my Locale::PO $po = new Locale::PO;
-    my Locale::PO $po = new Locale::PO(%options);
+	my Locale::PO $po = new Locale::PO;
+	my Locale::PO $po = new Locale::PO(%options);
 
 Create a new Locale::PO object to represent a po entry.
-You can optionally set the attributes of the entry by passing
+You can optionally set the attributes of the entry by passing 
 a list/hash of the form:
 
-    -option=>value, -option=>value, etc.
+	-option=>value, -option=>value, etc.
 
-Where options are msgid, msgstr, msgctxt, comment, automatic, reference,
+Where options are msgid, msgid_plural, msgstr, msgctxt, comment, automatic,
+reference, fuzzy_msgctxt, fuzzy_msgid, fuzzy_msgid_plural,
 fuzzy, and c-format. See accessor methods below.
 
 To generate a po file header, add an entry with an empty
 msgid, like this:
 
-    $po = new Locale::PO(-msgid=>'', -msgstr=>
-	    "Project-Id-Version: PACKAGE VERSION\\n" .
-	    "PO-Revision-Date: YEAR-MO-DA HO:MI +ZONE\\n" .
-	    "Last-Translator: FULL NAME <EMAIL@ADDRESS>\\n" .
-	    "Language-Team: LANGUAGE <LL@li.org>\\n" .
-	    "MIME-Version: 1.0\\n" .
-	    "Content-Type: text/plain; charset=CHARSET\\n" .
-	    "Content-Transfer-Encoding: ENCODING\\n");
+	$po = new Locale::PO(-msgid=>'', -msgstr=>
+		"Project-Id-Version: PACKAGE VERSION\\n" .
+		"PO-Revision-Date: YEAR-MO-DA HO:MI +ZONE\\n" .
+		"Last-Translator: FULL NAME <EMAIL@ADDRESS>\\n" .
+		"Language-Team: LANGUAGE <LL@li.org>\\n" .
+		"MIME-Version: 1.0\\n" .
+		"Content-Type: text/plain; charset=CHARSET\\n" .
+		"Content-Transfer-Encoding: ENCODING\\n");
 
 =item msgid
 
@@ -579,18 +640,36 @@ Get or set the translations if there are purals involved. Takes and
 returns a hashref where the keys are the 'N' case and the values are
 the strings. eg:
 
-    $po->msgstr_n(
-	{
-	    0 => 'found %d plural translations',
-	    1 => 'found %d singular translation',
-	}
-    );
+	$po->msgstr_n(
+	    {
+	        0 => 'found %d plural translations',
+	        1 => 'found %d singular translation',
+	    }
+	);
 
 This method expects the new strings in unquoted form but returns the current strings in quoted form.
 
 =item msgctxt
 
 Set or get the translation context string from the object.
+
+This method expects the new string in unquoted form but returns the current string in quoted form.
+
+=item fuzzy_msgid
+
+Set or get the outdated untranslated string from the object.
+
+This method expects the new string in unquoted form but returns the current string in quoted form.
+
+=item fuzzy_msgid_plural
+
+Set or get the outdated untranslated plural string from the object.
+
+This method expects the new string in unquoted form but returns the current string in quoted form.
+
+=item fuzzy_msgctxt
+
+Set or get the outdated translation context string from the object.
 
 This method expects the new string in unquoted form but returns the current string in quoted form.
 
@@ -612,7 +691,7 @@ each comment line nor the newline at the end of the last comment line.
 
 =item automatic
 
-Set or get automatic comments from the object (inserted by
+Set or get automatic comments from the object (inserted by 
 emacs po-mode or xgettext).
 
 If there are no such comments, then the value is undef.  Otherwise,
@@ -634,7 +713,7 @@ When setting, use 1 to turn on fuzzy, and 0 to turn it off.
 
 Set or get the c-format or no-c-format flag on the object.
 
-This can take 3 values:
+This can take 3 values: 
 1 implies c-format, 0 implies no-c-format, and undefined implies neither.
 
 =item php_format
@@ -646,21 +725,21 @@ This can take 3 values:
 
 =item has_flag
 
-    if ($po->has_flag('perl-format')) {
-	    ...
-    }
+	if ($po->has_flag('perl-format')) {
+		...
+	}
 
 Returns true if the flag exists in the entry's #~ comment
 
 =item add_flag
 
-    $po->add_flag('perl-format');
+	$po->add_flag('perl-format');
 
 Adds the flag to the #~ comment
 
 =item remove_flag
 
-    $po->remove_flag('perl-format');
+	$po->remove_flag('perl-format');
 
 Removes the flag from the #~ comment
 
@@ -688,8 +767,7 @@ Returns a quoted po string to its natural form.
 
 Given the filename of a po-file, reads the file and returns a
 reference to a list of Locale::PO objects corresponding to the contents of
-the file, in the same order.  Accepts an optional encoding parameter (e.g.
-"utf8") which defines how the po-file's input stream will be configured.
+the file, in the same order.
 
 =item load_file_ashash
 
@@ -697,23 +775,18 @@ Given the filename of a po-file, reads the file and returns a
 reference to a hash of Locale::PO objects corresponding to the contents of
 the file. The hash keys are the untranslated strings, so this is a cheap
 way to remove duplicates. The method will prefer to keep entries that
-have been translated.  Accepts an optional encoding parameter (e.g.
-"utf8") which defines how the po-file's input stream will be configured.
+have been translated.
 
 =item save_file_fromarray
 
 Given a filename and a reference to a list of Locale::PO objects,
-saves those objects to the file, creating a po-file.  Accepts an optional
-encoding parameter (e.g. "utf8") which defines how the po-file's output
-stream will be configured.
+saves those objects to the file, creating a po-file.
 
 =item save_file_fromhash
 
 Given a filename and a reference to a hash of Locale::PO objects,
 saves those objects to the file, creating a po-file. The entries
-are sorted alphabetically by untranslated string.  Accepts an optional
-encoding parameter (e.g. "utf8") which defines how the po-file's output
-stream will be configured.
+are sorted alphabetically by untranslated string.
 
 =back
 
