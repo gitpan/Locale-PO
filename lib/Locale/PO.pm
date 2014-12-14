@@ -1,7 +1,7 @@
 package Locale::PO;
 use strict;
 use warnings;
-our $VERSION = '0.24';
+our $VERSION = '0.25';
 
 use Carp;
 
@@ -209,10 +209,8 @@ sub _normalize_str {
     my $string   = shift;
     my $dequoted = $self->dequote($string);
 
-    # This isn't quite perfect, but it's fast and easy
-    if ($dequoted =~ /\n/) {
-
-        # Multiline
+    # Multiline: this isn't quite perfect, but fast and easy
+    if (defined $dequoted && $dequoted =~ /\n/) {
         my $output;
         my @lines;
         @lines = split(/\n/, $dequoted, -1);
@@ -224,10 +222,9 @@ sub _normalize_str {
         $output .= $self->quote($lastline) . "\n" if $lastline ne "";
         return $output;
     }
+    # Single line
     else {
-
-        # Single line
-        return "$string\n";
+        return ($string || "") . "\n";
     }
 }
 
@@ -317,8 +314,8 @@ sub quote {
     return undef
         unless defined $string;
 
+    $string =~ s/\\(?!t)/\\\\/g;           # \t is a tab
     $string =~ s/"/\\"/g;
-    $string =~ s/(?<!(\\))\\n/\\\\n/g;
     $string =~ s/\n/\\n/g;
     return "\"$string\"";
 }
@@ -332,9 +329,11 @@ sub dequote {
 
     $string =~ s/^"(.*)"/$1/;
     $string =~ s/\\"/"/g;
-    $string =~ s/(?<!(\\))\\n/\n/g;
-    $string =~ s/\\\\n/\\n/g;
-
+    $string =~ s/(?<!(\\))\\n/\n/g;        # newline
+    $string =~ s/(?<!(\\))\\{2}n/\\n/g;    # inline newline
+    $string =~ s/(?<!(\\))\\{3}n/\\\n/g;   # \ followed by newline
+    $string =~ s/\\{4}n/\\\\n/g;           # \ followed by inline newline
+    $string =~ s/\\\\(?!n)/\\/g;           # all slashes not related to a newline
     return $string;
 }
 
@@ -355,7 +354,8 @@ sub _save_file {
     my $entries  = shift;
     my $encoding = shift;
 
-    open(OUT, defined($encoding) ? ">:encoding($encoding)" : ">", $file) or return undef;
+    open(OUT, defined($encoding) ? ">:encoding($encoding)" : ">", $file)
+		or return undef;
     if ($ashash) {
         foreach (sort keys %$entries) {
             print OUT $entries->{$_}->dump;
@@ -396,8 +396,19 @@ sub _load_file {
         or return undef;
 
     while (<IN>) {
-        chop;
+        chomp;
         $line_number++;
+
+        #
+        # Strip trailing \r\n chars
+        #
+        # This can possibly have an effect only on msys (on which chomp
+        # seems to leave some trailing \r chars) and on MacOS that has
+        # reversed newline (\n\r).
+        # Note that our stripping of those trailing chars is only going to be
+        # useful when writing from one platform and reading on another.
+        s{[\r\n]*$}{};
+
         if (/^$/) {
 
             # Empty line. End of an entry.
@@ -531,7 +542,7 @@ sub _load_file {
             $$last_buffer .= $self->dequote($1);
         }
         else {
-            warn "Strange line at $file line $line_number: $_\n";
+            warn "Strange line at $file line $line_number: [$_]\n";
         }
     }
     if (defined($po)) {

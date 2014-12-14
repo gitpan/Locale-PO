@@ -16,3 +16,4 @@ t/test.pot
 t/test1.pot
 t/utf-8.po
 t/utf-8.t
+META.json                                Module JSON meta-data (added by MakeMaker)
